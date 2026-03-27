@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إعمار ابو الهول - مبادرة كلية الطب جامعة الجزيرة</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Tajawal:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div id="app">
+        <!-- Hero Section -->
+        <header class="hero">
+            <div class="hero-overlay"></div>
+            <div class="container">
+                <nav class="glass-nav">
+                    <div class="logo">
+                        <img src="assets/emmar.jpg" alt="Logo"
+                            style="height: 40px; border-radius: 50%; vertical-align: middle; margin-left: 10px;">
+                        إعمار<span>ابو الهول</span>
+                    </div>
+                    <div class="nav-links">
+                        <a href="gallery.html" class="admin-link" style="margin-left: 15px;">المعرض</a>
+                    </div>
+                </nav>
+                <div class="hero-content">
+                    <h1 class="fade-in">مبادرة <span>إعمار ابو الهول</span></h1>
+                    <p class="fade-in delay-1">لطلاب كلية الطب - جامعة الجزيرة، السودان.</p>
+                    <div class="initiative-badge">لمسة وفاء لمستقبل الأجيال </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Fundraising Progress (Moved here for correct overlap) -->
+        <section class="progress-section">
+            <div class="container">
+                <div class="glass-card progress-card">
+                    <h2>نحو التغيير المنشود</h2>
+                    <div class="progress-info">
+                        <div class="stat">
+                            <span class="label">تم جمع</span>
+                            <span class="value" id="current-amount">0</span>
+                            <span class="currency">ج.س</span>
+                        </div>
+                        <div class="stat">
+                            <span class="label">الهدف</span>
+                            <span class="value" id="target-amount">1,000,000</span>
+                            <span class="currency">ج.س</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progress-bar" style="width: 0%">
+                            <span class="progress-percentage" id="progress-percentage">0%</span>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 2rem;">
+                        <a href="#bank-details" class="btn-primary donate-cta"> شارك في الإعمار </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!--  -->
+        <section class="manifesto">
+            <div class="container">
+                <div class="manifesto-card fade-in">
+                    <div class="manifesto-header">
+                        <h2>مِيثاقُ الإعمار</h2>
+                        <span class="manifesto-subtitle">مَن يضعُ حجرَ الزاوية؟</span>
+                    </div>
+                    <div class="manifesto-body">
+                        <p>زملائي الاعزاء ، صناع التغيير..</p>
+                        <p>يُقال: "إنَّ عظمةَ البناءِ من عظمةِ بُناتِه"، ومسيرتُنا اليومَ نحو إرساءِ الجمالِ وتجديدِ
+                            مَعالمِ هذا المكان هي عهدٌ نَقطعهُ لِيظلَّ هذا الصرحُ مَنارةً تَليقُ بساكنيه. إنَّ أعمالَ
+                            الصيانةِ التي بدأت، وما نرجوهُ من بَهاء، هي أمانةٌ عِمادُها هِممُكم؛ فالجَمالُ لا يَكتملُ
+                            بصورةٍ تُرسَم، بل بيَدٍ تَبني وعزيمةٍ تَجود.</p>
+                        <div class="manifesto-highlight">
+                            نفتحُ اليومَ مِضماراً لـ <strong>"استباقِ الفضل"</strong> بين كافةِ الدفعات، ليكونَ لكلِّ
+                            جيلٍ مَقامٌ مَشهودٌ في سجلِّ البُناة.
+                        </div>
+                        <p>وإذا كانت الإدارةُ قد وعدت بتقديمِ سهمِها ودعمِها، فإنَّ نبضَ المشروعِ وقوته يظلانِ
+                            مَرهونَيْنِ بفيضِ سَخائِكم؛ لِنُثبتَ أنَّ تكاتفَنا هو الحجرُ الذي لا يَنكسر، وأنَّ رِيادتَنا
+                            تُقاسُ بما نتركهُ من جَميل.</p>
+                        <div class="verse">
+                            فَسَابِقْ إِلَى الخَيْرَاتِ قَبْلَ فَوَاتِهَا ... فَمَا الفَخْرُ إِلَّا أَنْ تَكُونَ
+                            الْمُقَدَّمَا
+                        </div>
+                        <p>بادروا بالمساهمةِ معنا ، لنرى أيَّ البصماتِ ستكونُ الأرسخَ في سجلِّ الإعمار، وأيَّ جيلٍ
+                            سيخطُّ بيدهِ مَعالمَ الرِّيادة.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Leaderboard Section -->
+        <section class="leaderboard-section">
+            <div class="container">
+                <h2 class="section-title">صدارة البُناة</h2>
+                <p class="section-subtitle">ترتيب الدفعات حسب المساهمات الكلية</p>
+                <div class="glass-card leaderboard-card">
+                    <div id="leaderboard-container">
+                        <!-- Dynamic leaderboard entries will load here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Bank Transfer Details -->
+        <section class="bank-details" id="bank-details">
+            <div class="container">
+                <h2 class="section-title">طرق التبرع</h2>
+                <div class="grid">
+                    <div class="glass-card transfer-card" id="bank-bankak">
+                        <div class="icon-bank"></div>
+                        <h3>بنكك</h3>
+                        <p class="account-number">3958804</p>
+                        <p class="account-name">ناجي إبراهيم عبدالله محمد</p>
+                        <button class="copy-btn" onclick="copyText('3958804')">نسخ الرقم</button>
+                    </div>
+                    <div class="glass-card transfer-card" id="bank-oowash">
+                        <div class="icon-oowash"></div>
+                        <h3>أووكاش</h3>
+                        <p class="account-number">1463697</p>
+                        <p class="account-name">تسليم عابدين الصديق محمد</p>
+                        <button class="copy-btn" onclick="copyText('1463697')">نسخ الرقم</button>
+                    </div>
+                    <div class="glass-card transfer-card" id="bank-fawry">
+                        <div class="icon-fawry"></div>
+                        <h3>فوري</h3>
+                        <p class="account-number">51840915</p>
+                        <p class="account-name">تسليم عابدين الصديق محمد</p>
+                        <button class="copy-btn" onclick="copyText('51840915')">نسخ الرقم</button>
+                    </div>
+                </div>
+                <div class="instruction-banner glass-card">
+                    <p>ارسل الإشعار للرقم: <strong>0128930178</strong> مع كتابة اسم الدفعة في خانة التعليقات</p>
+                    <a href="https://wa.me/249128930178" target="_blank" class="whatsapp-btn">
+                        تأكيد التبرع عبر واتساب
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="gallery">
+            <div class="container">
+                <h2 class="section-title">مسار الإعمار</h2>
+                <p class="section-subtitle">إنجازاتنا على أرض الواقع (ما تم وما يجري الآن)</p>
+                <div class="gallery-grid" id="work-progress-gallery">
+                    <!-- Dynamic content will load here -->
+                </div>
+                <div class="view-all-container">
+                    <a href="gallery.html?filter=progress" class="btn-outline">عرض كافة الأعمال</a>
+                </div>
+            </div>
+        </section>
+
+
+        <footer class="main-footer">
+            <div class="container">
+                <div class="footer-grid">
+                    <div class="footer-col">
+                        <div class="logo">إعمار<span>ابو الهول</span></div>
+                        <p>مبادرة طلاب كلية الطب - جامعة الجزيرة لإعادة تأهيل وبناء مرافق الكلية وتطوير بيئتها
+                            التعليمية.</p>
+                    </div>
+                    <div class="footer-col">
+                        <h3>روابط سريعة</h3>
+                        <ul>
+                            <li><a href="#">الرئيسية</a></li>
+                            <li><a href="#bank-details">طرق التبرع</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h3>تواصل معنا</h3>
+                        <div class="social-icons">
+                            <a href="https://wa.me/249128930178" target="_blank" class="social-icon whatsapp" title="تواصل عبر واتساب">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; 2026 مبادرة إعمار ابو الهول - كلية الطب - جامعة الجزيرة</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
