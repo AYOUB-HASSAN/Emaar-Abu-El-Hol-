@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة القيادة | إعمار ابو الهول</title>
+    <meta name="robots" content="noindex, nofollow">
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -321,8 +322,44 @@
     </main>
 
     <script>
+        let currentFileUrl = null;
+
+        async function fetchAppData() {
+            const apiUrl = localStorage.getItem('emaar_api_url');
+            if (!apiUrl) return;
+
+            try {
+                const resp = await fetch(apiUrl);
+                const cloudData = await resp.json();
+                
+                // Update local state and HUD
+                const state = {
+                    targetAmount: Number(cloudData.stats.target_amount) || 0,
+                    currentAmount: Number(cloudData.stats.total_collected) || 0,
+                    batches: (cloudData.gallery || []).map(item => ({
+                        id: item.id,
+                        type: item.type,
+                        batch: item.category,
+                        date: item.date,
+                        amount: Number(item.amount) || 0,
+                        image: item.url,
+                        status: item.status
+                    }))
+                };
+                localStorage.setItem('emaar_state', JSON.stringify(state));
+                loadAdmin();
+            } catch (e) {
+                console.error('Failed to sync with cloud:', e);
+            }
+        }
+
         function loadAdmin() {
-            const state = JSON.parse(localStorage.getItem('emaar_state'));
+            let state = JSON.parse(localStorage.getItem('emaar_state'));
+            if (!state) {
+                state = { targetAmount: 0, currentAmount: 0, batches: [] };
+                localStorage.setItem('emaar_state', JSON.stringify(state));
+            }
+            
             const apiUrl = localStorage.getItem('emaar_api_url');
 
             document.getElementById('target-input').value = state.targetAmount;
@@ -346,37 +383,57 @@
         function saveApiUrl() {
             const url = document.getElementById('api-url-input').value;
             localStorage.setItem('emaar_api_url', url);
-            loadAdmin();
-            alert('تم حفظ الإعدادات');
+            fetchAppData();
+            alert('تم حفظ الإعدادات ومزامنة البيانات');
         }
 
         function previewImage() {
             const file = document.getElementById('receipt-file').files[0];
             if(file) {
-                console.log('File selected:', file.name);
-                // Optional: show small thumbnail
+                document.getElementById('analysis-box').style.display = 'block';
+                document.getElementById('extracted-amount').value = '';
+                document.getElementById('analysis-status').innerHTML = '<i class="fas fa-image"></i> تم اختيار الصورة، اضغط على "تحليل" للبدء.';
             }
         }
 
         function updateNumbers() {
             const state = JSON.parse(localStorage.getItem('emaar_state'));
-            state.targetAmount = parseInt(document.getElementById('target-input').value);
-            state.currentAmount = parseInt(document.getElementById('current-input').value);
+            const target = parseInt(document.getElementById('target-input').value);
+            const current = parseInt(document.getElementById('current-input').value);
+            
+            state.targetAmount = target;
+            state.currentAmount = current;
             localStorage.setItem('emaar_state', JSON.stringify(state));
+
+            // Sync to cloud
+            const apiUrl = localStorage.getItem('emaar_api_url');
+            if (apiUrl) {
+                fetch(apiUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'updateStats', key: 'target_amount', value: target })
+                });
+                fetch(apiUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'updateStats', key: 'total_collected', value: current })
+                });
+            }
+
             loadAdmin();
-            alert('تم التحديث بنجاح');
+            alert('تم تحديث الإحصائيات محلياً وجاري المزامنة...');
         }
 
         async function analyzeReceipt() {
             const fileInput = document.getElementById('receipt-file');
-            const apiUrl = localStorage.getItem('emaar_api_url');
-            if(!fileInput.files[0] || !apiUrl) return alert('بجب اختيار ملف واعدلدات API');
-
             const btn = document.getElementById('analyze-btn');
-            const box = document.getElementById('analysis-box');
+            const status = document.getElementById('analysis-status');
+            const apiUrl = localStorage.getItem('emaar_api_url');
+            
+            if (!fileInput.files[0]) return alert('الرجاء اختيار صورة الإيصال أولاً');
+            if (!apiUrl) return alert('يرجى تهيئة رابط API في الإعدادات');
+
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-sync fa-spin"></i> جاري قراءة البيانات...';
-            box.style.display = 'block';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الرفع والتحليل...';
+            status.innerHTML = `<i class="fas fa-microchip"></i> جاري التحليل الذكي عبر السحابة...`;
 
             try {
                 const reader = new FileReader();
@@ -386,56 +443,71 @@
 
                 const resp = await fetch(apiUrl, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'analyze', file: base64 })
+                    body: JSON.stringify({ 
+                        action: 'upload_and_analyze', 
+                        file: base64, 
+                        filename: `temp_${Date.now()}.jpg`,
+                        performOcr: true
+                    })
                 });
-                const res = await resp.json();
                 
-                if(res.status === 'success') {
+                const res = await resp.json();
+                if (res.status === 'success') {
+                    currentFileUrl = res.url;
                     document.getElementById('extracted-amount').value = res.suggested;
-                    document.getElementById('analysis-status').innerHTML = '<i class="fas fa-check-circle" style="color:#059669;"></i> تم التحليل بنجاح!';
+                    if (res.autoBatch) {
+                        document.getElementById('receipt-batch').value = res.autoBatch;
+                    }
+                    status.innerHTML = `<i class="fas fa-check-circle" style="color:#059669;"></i> تم الرفع والتحليل بنجاح!`;
                     document.getElementById('save-receipt-btn').style.display = 'block';
+                } else {
+                    throw new Error(res.message);
                 }
-            } catch(e) {
-                alert('فشل التحليل، يرجى إدخال المبلغ يدوياً');
+            } catch (e) {
+                status.innerHTML = `<i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i> خطأ: ${e.message}`;
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'إعادة التحليل';
             }
-            btn.disabled = false;
-            btn.innerText = 'إعادة التحليل';
         }
 
         async function saveSmartReceipt() {
             const amount = parseInt(document.getElementById('extracted-amount').value);
             const batch = document.getElementById('receipt-batch').value;
-            const date = document.getElementById('receipt-date').value;
-            const fileInput = document.getElementById('receipt-file');
-            
-            if(!amount || !batch || !date) return alert('الرجاء إكمال البيانات');
-
-            const state = JSON.parse(localStorage.getItem('emaar_state'));
-            state.currentAmount += amount;
-            state.batches.push({ 
-                id: Date.now(), 
-                type: 'funding', 
-                batch: batch, 
-                amount: amount, 
-                date: date, 
-                image: "assets/receipt-private.jpg", // Simplified placeholder for receipts
-                status: 'done' 
-            });
-            
-            localStorage.setItem('emaar_state', JSON.stringify(state));
-            
-            // Also update Cloud
+            const btn = document.getElementById('save-receipt-btn');
             const apiUrl = localStorage.getItem('emaar_api_url');
-            if(apiUrl) {
-                fetch(apiUrl, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'updateStats', key: 'total_collected', value: state.currentAmount })
-                });
-            }
+            
+            if (!amount || !batch || !currentFileUrl) return alert('الرجاء إكمال التحليل واختيار الدفعة');
 
-            alert('تم حفظ الدفعة وتحديث الإحصائيات');
-            resetSmartPortal();
-            loadAdmin();
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ النهائي...';
+
+            try {
+                const resp = await fetch(apiUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        action: 'save_final', 
+                        amount: amount,
+                        category: batch,
+                        fileUrl: currentFileUrl,
+                        type: 'funding'
+                    })
+                });
+                
+                const res = await resp.json();
+                if (res.status === 'success') {
+                    alert('✅ تم الحفظ بنجاح! تم تحديث الشيت والصدارة.');
+                    resetSmartPortal();
+                    fetchAppData(); // Sync everything
+                } else {
+                    throw new Error(res.message);
+                }
+            } catch (e) {
+                alert('خطأ في الحفظ: ' + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'تأكيد وحفظ البيانات';
+            }
         }
 
         function resetSmartPortal() {
@@ -444,70 +516,77 @@
             document.getElementById('save-receipt-btn').style.display = 'none';
             document.getElementById('receipt-batch').value = '';
             document.getElementById('extracted-amount').value = '';
+            currentFileUrl = null;
         }
 
         async function addWorkEntry() {
             const title = document.getElementById('work-title').value;
             const date = document.getElementById('work-date').value;
             const fileInput = document.getElementById('work-file');
-            
-            if(!title || !date) return alert('أدخل العنوان والتاريخ');
-
-            let imageUrl = "assets/uofg-med.jpg";
             const apiUrl = localStorage.getItem('emaar_api_url');
+            
+            if(!title || !date || !fileInput.files[0]) return alert('أدخل العنوان والتاريخ واختر الصورة');
+            if(!apiUrl) return alert('يرجى تهيئة رابط API أولاً');
 
-            if (fileInput.files.length > 0 && apiUrl) {
-                try {
-                    const reader = new FileReader();
-                    const filePromise = new Promise(r => reader.onload = () => r(reader.result));
-                    reader.readAsDataURL(fileInput.files[0]);
-                    const base64 = await filePromise;
+            const btn = document.querySelector('button[onclick="addWorkEntry()"]');
+            btn.disabled = true;
+            btn.innerText = 'جاري الرفع...';
 
-                    const resp = await fetch(apiUrl, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'upload', file: base64, filename: fileInput.files[0].name, category: title })
-                    });
-                    const res = await resp.json();
-                    if(res.status === 'success') imageUrl = res.url;
-                } catch(e) { console.error(e); }
+            try {
+                const reader = new FileReader();
+                const filePromise = new Promise(r => reader.onload = () => r(reader.result));
+                reader.readAsDataURL(fileInput.files[0]);
+                const base64 = await filePromise;
+
+                const resp = await fetch(apiUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        action: 'upload', 
+                        file: base64, 
+                        filename: fileInput.files[0].name, 
+                        category: title,
+                        type: 'progress' 
+                    })
+                });
+                const res = await resp.json();
+                if (res.status === 'success') {
+                    alert('تمت إضافة الإنجاز للمعرض');
+                    fetchAppData();
+                } else {
+                    throw new Error(res.message);
+                }
+            } catch(e) { 
+                alert('خطأ: ' + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'إرسال للمعرض العام';
             }
-
-            const state = JSON.parse(localStorage.getItem('emaar_state'));
-            state.batches.push({ id: Date.now(), type: 'progress', batch: title, amount: 0, date: date, image: imageUrl, status: 'done' });
-            localStorage.setItem('emaar_state', JSON.stringify(state));
-            loadAdmin();
-            alert('تمت إضافة الإنجاز للمعرض');
-        }
-
-        function deleteBatch(id) {
-            if(!confirm('هل أنت متأكد من الحذف؟')) return;
-            const state = JSON.parse(localStorage.getItem('emaar_state'));
-            state.batches = state.batches.filter(b => b.id !== id);
-            localStorage.setItem('emaar_state', JSON.stringify(state));
-            loadAdmin();
         }
 
         function renderBatches() {
-            const state = JSON.parse(localStorage.getItem('emaar_state'));
+            const state = JSON.parse(localStorage.getItem('emaar_state')) || { batches: [] };
             const container = document.getElementById('batch-list-container');
             container.innerHTML = '';
             
             state.batches.slice().reverse().forEach(b => {
                 container.innerHTML += `
                     <tr>
-                        <td><img src="${b.image}" class="thumb"></td>
+                        <td><img src="${b.image}" class="thumb" onerror="this.src='assets/uofg-med.jpg'"></td>
                         <td><strong>${b.batch}</strong></td>
                         <td style="font-size: 0.8rem;">${b.date}</td>
-                        <td><span style="color: var(--dash-primary); font-weight: 700;">${b.amount.toLocaleString()}</span></td>
+                        <td><span style="color: var(--dash-primary); font-weight: 700;">${(b.amount || 0).toLocaleString()}</span></td>
                         <td>
-                            <button class="delete-btn" style="padding: 5px 10px;" onclick="deleteBatch(${b.id})"><i class="fas fa-trash"></i></button>
+                            <button class="delete-btn" style="padding: 5px 10px;" onclick="alert('يرجى حذف السطر من ملف Google Sheets مباشرة لضمان أمان البيانات')"><i class="fas fa-info-circle"></i></button>
                         </td>
                     </tr>
                 `;
             });
         }
 
-        document.addEventListener('DOMContentLoaded', loadAdmin);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAdmin();
+            fetchAppData();
+        });
     </script>
 </body>
 </html>

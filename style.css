@@ -505,30 +505,38 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem 2.5rem;
-    border-bottom: 1px solid #f1f5f9;
+    padding: 1.2rem 2rem;
+    margin-bottom: 0.8rem;
+    border-radius: 18px;
     transition: var(--transition);
     position: relative;
     overflow: hidden;
-    background: white;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
+/* The Animated Progress Bar */
 .leader-row::before {
     content: '';
     position: absolute;
     top: 0;
     right: 0;
     bottom: 0;
-    width: var(--contribution-width, 0%);
-    background: rgba(5, 150, 105, 0.05);
+    width: 0; /* Animated via JS after load */
+    background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.08));
     z-index: 0;
-    transition: width 1s ease-out;
+    transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.leader-row.animate-in::before {
+    width: var(--contribution-width, 0%);
 }
 
 .leader-row:hover {
-    transform: translateX(-10px);
-    background: rgba(5, 150, 105, 0.02);
-    box-shadow: inset 5px 0 0 var(--primary);
+    transform: scale(1.02);
+    box-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.1);
+    background: white;
 }
 
 .leader-row>* {
@@ -537,46 +545,63 @@ body {
 }
 
 .rank-badge {
-    width: 45px;
-    height: 45px;
-    background: #e2e8f0;
+    width: 42px;
+    height: 42px;
+    background: #f1f5f9;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 800;
     color: var(--text-dark);
-    font-size: 1.2rem;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    font-size: 1.1rem;
+    transition: var(--transition);
 }
 
+/* Rank 1 (Gold/Emerald Hybrid) */
+.rank-1 {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), rgba(255, 255, 255, 0.8));
+    border-color: rgba(255, 215, 0, 0.2);
+}
 .rank-1 .rank-badge {
-    background: linear-gradient(135deg, #ffd700, #f9a825);
+    background: linear-gradient(135deg, #FFD700, #F97316);
     color: white;
-    box-shadow: 0 4px 10px rgba(249, 168, 37, 0.3);
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
 }
 
+/* Rank 2 (Silver) */
+.rank-2 {
+    background: linear-gradient(135deg, rgba(148, 163, 184, 0.05), rgba(255, 255, 255, 0.8));
+}
 .rank-2 .rank-badge {
-    background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+    background: linear-gradient(135deg, #94A3B8, #475569);
     color: white;
 }
 
+/* Rank 3 (Bronze) */
+.rank-3 {
+    background: linear-gradient(135deg, rgba(251, 146, 60, 0.05), rgba(255, 255, 255, 0.8));
+}
 .rank-3 .rank-badge {
-    background: linear-gradient(135deg, #fb923c, #c2410c);
+    background: linear-gradient(135deg, #D97706, #78350F);
     color: white;
 }
 
 .batch-name {
-    font-size: 1.4rem;
-    font-weight: 800;
+    font-size: 1.25rem;
+    font-weight: 750;
     color: var(--text-dark);
+    letter-spacing: -0.02em;
 }
 
 .batch-total {
-    font-size: 1.5rem;
-    font-weight: 900;
+    font-size: 1.4rem;
+    font-weight: 850;
     color: var(--primary);
     font-family: 'Outfit', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 /* Status Badges */
@@ -648,10 +673,22 @@ body {
 
 /* Footer */
 .main-footer {
-    background: white;
+    background: #f8fafc;
     padding: 5rem 0 2rem;
     border-top: 1px solid var(--glass-border);
     color: var(--text-dark);
+}
+
+.main-footer .logo {
+    color: var(--text-dark);
+    margin-bottom: 1.5rem;
+    display: inline-block;
+}
+
+.main-footer .footer-col p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.8;
 }
 
 .footer-grid {
@@ -692,11 +729,16 @@ body {
 
 .social-icon {
     text-decoration: none;
-    padding: 0.8rem 1.5rem;
+    width: 45px;
+    height: 45px;
     border-radius: 12px;
-    background: #f1f5f9;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     color: var(--text-dark);
-    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
     transition: var(--transition);
 }
 
@@ -707,9 +749,9 @@ body {
 
 .footer-bottom {
     padding-top: 2rem;
-    border-top: 1px solid #f1f5f9;
+    border-top: 1px solid #e2e8f0;
     text-align: center;
-    color: var(--text-muted);
+    color: var(--text-dark);
     font-size: 0.9rem;
 }
 

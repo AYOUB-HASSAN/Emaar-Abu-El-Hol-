@@ -8,10 +8,14 @@ const API_CONFIG = {
 // Initial Data Configuration (Fallback)
 const DEFAULT_DATA = {
     targetAmount: 5000000,
-    currentAmount: 1250000,
+    currentAmount: 4000000,
     batches: [
         { id: 1, type: "progress", batch: "صيانة القاعات الكبرى", date: "2026-03-20", amount: 0, image: "assets/uofg-med.jpg", status: "ongoing" },
-        { id: 2, type: "funding", batch: "دفعة 38", date: "2026-03-22", amount: 450000, image: "assets/uofg-intro-show.jpg", status: "done" }
+        { id: 2, type: "funding", batch: "دفعة 38", date: "2026-03-22", amount: 1450000, image: "assets/uofg-intro-show.jpg", status: "done" },
+        { id: 3, type: "funding", batch: "دفعة 36", date: "2026-03-21", amount: 980000, image: "assets/uofg-intro-show.jpg", status: "done" },
+        { id: 4, type: "funding", batch: "دفعة 39", date: "2026-03-23", amount: 750000, image: "assets/uofg-intro-show.jpg", status: "done" },
+        { id: 5, type: "funding", batch: "دفعة 40", date: "2026-03-24", amount: 520000, image: "assets/uofg-intro-show.jpg", status: "done" },
+        { id: 6, type: "funding", batch: "دفعة 37", date: "2026-03-19", amount: 300000, image: "assets/uofg-intro-show.jpg", status: "done" }
     ]
 };
 
@@ -26,14 +30,14 @@ async function initAppData() {
 
             // Map Cloud Data to App State
             appState = {
-                targetAmount: cloudData.stats.target_amount || DEFAULT_DATA.targetAmount,
-                currentAmount: cloudData.stats.total_collected || DEFAULT_DATA.currentAmount,
-                batches: cloudData.gallery.map(item => ({
+                targetAmount: Number(cloudData.stats.target_amount) || DEFAULT_DATA.targetAmount,
+                currentAmount: Number(cloudData.stats.total_collected) || DEFAULT_DATA.currentAmount,
+                batches: (cloudData.gallery || []).map(item => ({
                     id: item.id,
                     type: item.type,
                     batch: item.category, // Using category as batch name from sheet
                     date: item.date,
-                    amount: item.amount || 0,
+                    amount: Number(item.amount) || 0,
                     image: item.url,
                     status: item.status === 'active' ? 'done' : 'ongoing'
                 }))
@@ -93,7 +97,8 @@ function updateUI() {
     const batchTotals = {};
     state.batches.forEach(b => {
         if (b.type === 'funding') {
-            batchTotals[b.batch] = (batchTotals[b.batch] || 0) + b.amount;
+            const amount = Number(b.amount) || 0;
+            batchTotals[b.batch] = (batchTotals[b.batch] || 0) + amount;
         }
     });
 
@@ -121,12 +126,18 @@ function updateUI() {
 
                 row.innerHTML = `
                     <div class="leader-info">
-                        <div class="rank-badge">${rank}</div>
+                        <div class="rank-badge">${rank} ${rank === 1 ? '<i class="fas fa-crown" style="font-size: 0.7rem; margin-left: 4px;"></i>' : ''}</div>
                         <span class="batch-name">${item.name}</span>
                     </div>
-                    <div class="batch-total">${item.amount.toLocaleString()} <span style="font-size: 0.8rem; font-weight: 600;">ج.س</span></div>
+                    <div class="batch-total">
+                        ${item.amount.toLocaleString()} 
+                        <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-right: 4px;">ج.س</span>
+                    </div>
                 `;
                 leaderboard.appendChild(row);
+
+                // Trigger animation after a tiny delay
+                setTimeout(() => row.classList.add('animate-in'), 100 + (index * 100));
             });
         }
     }
