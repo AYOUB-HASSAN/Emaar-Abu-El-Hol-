@@ -39,6 +39,8 @@ async function initAppData() {
                     date: item.date,
                     amount: Number(item.amount) || 0,
                     image: item.url,
+                    title: item.title || '',
+                    text: item.text || item.description || '',
                     status: item.status === 'active' ? 'done' : 'ongoing'
                 }))
             };
@@ -93,55 +95,9 @@ function updateUI() {
     if (progressBar) progressBar.style.width = percentage + '%';
     if (progressPercentage) progressPercentage.innerText = Math.round(percentage) + '%';
 
-    // Calculate Leaderboard
-    const batchTotals = {};
-    state.batches.forEach(b => {
-        if (b.type === 'funding') {
-            const amount = Number(b.amount) || 0;
-            batchTotals[b.batch] = (batchTotals[b.batch] || 0) + amount;
-        }
-    });
 
-    const leaderboardData = Object.keys(batchTotals)
-        .map(name => ({ name, amount: batchTotals[name] }))
-        .sort((a, b) => b.amount - a.amount);
 
-    const leaderboard = document.getElementById('leaderboard-container');
-    if (leaderboard) {
-        leaderboard.innerHTML = '';
-
-        // Find max total for ratio
-        const maxTotal = Math.max(...Object.values(batchTotals), 1);
-
-        if (leaderboardData.length === 0) {
-            leaderboard.innerHTML = '<div class="placeholder-msg">لا توجد مساهمات حتى الآن</div>';
-        } else {
-            leaderboardData.forEach((item, index) => {
-                const row = document.createElement('div');
-                const rank = index + 1;
-                const ratio = (item.amount / maxTotal) * 100;
-
-                row.className = `leader-row rank-${rank}`;
-                row.style.setProperty('--contribution-width', `${ratio}%`);
-
-                row.innerHTML = `
-                    <div class="leader-info">
-                        <div class="rank-badge">${rank} ${rank === 1 ? '<i class="fas fa-crown" style="font-size: 0.7rem; margin-left: 4px;"></i>' : ''}</div>
-                        <span class="batch-name">${item.name}</span>
-                    </div>
-                    <div class="batch-total">
-                        ${item.amount.toLocaleString()} 
-                        <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-right: 4px;">ج.س</span>
-                    </div>
-                `;
-                leaderboard.appendChild(row);
-
-                // Trigger animation after a tiny delay
-                setTimeout(() => row.classList.add('animate-in'), 100 + (index * 100));
-            });
-        }
-    }
-
+    const progressGallery = document.getElementById('work-progress-gallery');
     if (progressGallery) progressGallery.innerHTML = '';
 
     const sortedEntries = state.batches.slice().reverse();
@@ -150,19 +106,25 @@ function updateUI() {
         // STRICT PRIVACY: Receipts are NEVER shown in any public gallery
         if (item.type === 'funding') return;
 
-        const card = document.createElement('div');
+        const card = document.createElement('a');
         card.className = 'gallery-item fade-in';
+        card.href = `post.html?id=${item.id}`;
+        card.style.textDecoration = 'none';
+        card.style.color = 'inherit';
 
         const statusBadge = item.type === 'progress'
             ? `<span class="status-badge ${item.status}">${item.status === 'done' ? 'تم الإنجاز' : 'جاري العمل'}</span>`
             : '';
 
         // Media Detection
-        const isVideo = item.image.toLowerCase().match(/\.(mp4|webm|ogg|mov)$/) || item.image.includes('youtube.com') || item.image.includes('vimeo.com');
+        const isVideo = item.image.toLowerCase().match(/\.(mp4|webm|ogg|mov)$/) || item.image.includes('youtube.com') || item.image.includes('vimeo.com') || item.image.includes('#video');
         const mediaHtml = isVideo
             ? `<video src="${item.image}" class="gallery-img" muted loop playsinline onmouseover="this.play()" onmouseout="this.pause()"></video>
                <div class="video-overlay"><i class="fas fa-play"></i></div>`
             : `<img src="${item.image}" alt="صورة" class="gallery-img">`;
+
+        // Truncate text for card preview
+        const previewText = item.text ? (item.text.length > 100 ? item.text.substring(0, 100) + '...' : item.text) : '';
 
         card.innerHTML = `
             ${statusBadge}
@@ -170,9 +132,13 @@ function updateUI() {
                 ${mediaHtml}
             </div>
             <div class="gallery-info">
-                <span class="gallery-batch">${item.batch}</span>
-                <span class="gallery-date">${item.date}</span>
-                ${item.amount > 0 ? `<p style="margin-top: 5px;">القيمة: ${item.amount.toLocaleString()} ج.س</p>` : ''}
+                ${item.title ? `<h3 class="gallery-title">${item.title}</h3>` : `<h3 class="gallery-title">${item.batch}</h3>`}
+                <div class="gallery-meta">
+                    <span class="gallery-batch">${item.batch}</span>
+                    <span class="gallery-date">${item.date}</span>
+                </div>
+                ${previewText ? `<p class="gallery-text">${previewText}</p>` : ''}
+                <span class="read-more-link">اقرأ المزيد <i class="fas fa-arrow-left"></i></span>
             </div>
         `;
 
@@ -213,18 +179,25 @@ function renderFullGallery(filter = 'all') {
     }
 
     entries.forEach((item, index) => {
-        const card = document.createElement('div');
+        const card = document.createElement('a');
         card.className = 'gallery-item fade-in';
+        card.href = `post.html?id=${item.id}`;
+        card.style.textDecoration = 'none';
+        card.style.color = 'inherit';
         card.style.animationDelay = `${index * 0.1}s`;
 
         const statusBadge = item.type === 'progress'
             ? `<span class="status-badge ${item.status}">${item.status === 'done' ? 'تم الإنجاز' : 'جاري العمل'}</span>`
             : '';
 
-        const isVideo = item.image.toLowerCase().match(/\.(mp4|webm|ogg|mov)$/) || item.image.includes('youtube.com') || item.image.includes('vimeo.com');
+        const isVideo = item.image.toLowerCase().match(/\.(mp4|webm|ogg|mov)$/) || item.image.includes('youtube.com') || item.image.includes('vimeo.com') || item.image.includes('#video');
         const mediaHtml = isVideo
-            ? `<video src="${item.image}" class="gallery-img" controls></video>`
+            ? `<video src="${item.image}" class="gallery-img" muted loop playsinline></video>
+               <div class="video-overlay"><i class="fas fa-play"></i></div>`
             : `<img src="${item.image}" alt="صورة" class="gallery-img">`;
+
+        // Truncate text for card preview
+        const previewText = item.text ? (item.text.length > 100 ? item.text.substring(0, 100) + '...' : item.text) : '';
 
         card.innerHTML = `
             ${statusBadge}
@@ -232,9 +205,13 @@ function renderFullGallery(filter = 'all') {
                 ${mediaHtml}
             </div>
             <div class="gallery-info">
-                <span class="gallery-batch">${item.batch}</span>
-                <span class="gallery-date">${item.date}</span>
-                ${item.amount > 0 ? `<p style="margin-top: 5px;">القيمة: ${item.amount.toLocaleString()} ج.س</p>` : ''}
+                ${item.title ? `<h3 class="gallery-title">${item.title}</h3>` : `<h3 class="gallery-title">${item.batch}</h3>`}
+                <div class="gallery-meta">
+                    <span class="gallery-batch">${item.batch}</span>
+                    <span class="gallery-date">${item.date}</span>
+                </div>
+                ${previewText ? `<p class="gallery-text">${previewText}</p>` : ''}
+                <span class="read-more-link">اقرأ المزيد <i class="fas fa-arrow-left"></i></span>
             </div>
         `;
         fullGallery.appendChild(card);

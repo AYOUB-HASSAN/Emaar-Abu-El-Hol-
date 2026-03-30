@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل المنشور | إعمار ابو الهول</title>
+    <meta property="og:title" content="إعمار ابو الهول - تفاصيل المنشور">
+    <meta property="og:description" content="تابع آخر أعمال ومستجدات مبادرة إعمار ابو الهول.">
+    <meta property="og:image" content="assets/emmar.jpg">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Tajawal:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <header>
+            <nav class="glass-nav container">
+                <div class="logo">إعمار<span>ابو الهول</span></div>
+                <div class="nav-links">
+                    <a href="gallery.html" class="admin-link" style="margin-left: 15px;">المعرض</a>
+                    <a href="index.html" class="admin-link">الرئيسية</a>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Post Header -->
+        <section class="post-hero">
+            <div class="container">
+                <a href="gallery.html" class="post-back-link"><i class="fas fa-arrow-right"></i> العودة للمعرض</a>
+            </div>
+        </section>
+
+        <!-- Post Content - Loaded dynamically -->
+        <article class="post-article container" id="post-content">
+            <div class="post-loading">
+                <div class="loading-spinner"></div>
+                <p>جاري تحميل المنشور...</p>
+            </div>
+        </article>
+
+        <!-- Donation Section -->
+        <section class="bank-details post-donate-section" id="bank-details">
+            <div class="container">
+                <h2 class="section-title">ساهم في الإعمار</h2>
+                <p class="section-subtitle">كل مساهمة تُحدث فرقاً حقيقياً</p>
+                <div class="grid">
+                    <div class="glass-card transfer-card" id="bank-bankak">
+                        <div class="icon-bank"></div>
+                        <h3>بنكك</h3>
+                        <p class="account-number">3958804</p>
+                        <p class="account-name">ناجي إبراهيم عبدالله محمد</p>
+                        <button class="copy-btn" onclick="copyText('3958804')">نسخ الرقم</button>
+                    </div>
+                    <div class="glass-card transfer-card" id="bank-oowash">
+                        <div class="icon-oowash"></div>
+                        <h3>أووكاش</h3>
+                        <p class="account-number">1463697</p>
+                        <p class="account-name">تسليم عابدين الصديق محمد</p>
+                        <button class="copy-btn" onclick="copyText('1463697')">نسخ الرقم</button>
+                    </div>
+                    <div class="glass-card transfer-card" id="bank-fawry">
+                        <div class="icon-fawry"></div>
+                        <h3>فوري</h3>
+                        <p class="account-number">51840915</p>
+                        <p class="account-name">تسليم عابدين الصديق محمد</p>
+                        <button class="copy-btn" onclick="copyText('51840915')">نسخ الرقم</button>
+                    </div>
+                </div>
+                <div class="instruction-banner glass-card">
+                    <p>ارسل الإشعار للرقم: <strong>0128930178</strong> مع كتابة اسم الدفعة في خانة التعليقات</p>
+                    <a href="https://wa.me/249128930178" target="_blank" class="whatsapp-btn">
+                        تأكيد التبرع عبر واتساب
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <footer class="main-footer">
+            <div class="container">
+                <div class="footer-bottom">
+                    <p>&copy; 2026 مبادرة إعمار ابو الهول - كلية الطب - جامعة الجزيرة</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Load the specific post after app data is ready
+        window.addEventListener('load', () => {
+            // Wait a moment for initAppData to finish
+            const checkReady = setInterval(() => {
+                if (appState && appState.batches && appState.batches.length > 0) {
+                    clearInterval(checkReady);
+                    loadPost();
+                }
+            }, 200);
+
+            // Timeout fallback
+            setTimeout(() => {
+                clearInterval(checkReady);
+                loadPost();
+            }, 5000);
+        });
+
+        function loadPost() {
+            const params = new URLSearchParams(window.location.search);
+            const postId = params.get('id');
+            const postContent = document.getElementById('post-content');
+
+            if (!postId) {
+                postContent.innerHTML = '<div class="post-error"><h2>لم يتم العثور على المنشور</h2><a href="gallery.html" class="btn-outline">العودة للمعرض</a></div>';
+                return;
+            }
+
+            // Find the post
+            const post = appState.batches.find(item => String(item.id) === String(postId));
+
+            if (!post) {
+                postContent.innerHTML = '<div class="post-error"><h2>لم يتم العثور على المنشور</h2><a href="gallery.html" class="btn-outline">العودة للمعرض</a></div>';
+                return;
+            }
+
+            // Update page title
+            document.title = (post.title || post.batch) + ' | إعمار ابو الهول';
+
+            // Detect media type
+            const isVideo = post.image && (post.image.toLowerCase().match(/\.(mp4|webm|ogg|mov)$/) || post.image.includes('youtube.com') || post.image.includes('vimeo.com') || post.image.includes('#video'));
+
+            // Build post HTML
+            let html = '';
+
+            // Title
+            html += `<header class="post-header">`;
+            html += `<h1 class="post-title">${post.title || post.batch}</h1>`;
+            html += `<div class="post-meta-bar">`;
+            if (post.batch) html += `<span class="post-category"><i class="fas fa-tag"></i> ${post.batch}</span>`;
+            if (post.date) html += `<span class="post-date"><i class="fas fa-calendar-alt"></i> ${post.date}</span>`;
+            if (post.status) html += `<span class="post-status ${post.status}"><i class="fas fa-circle"></i> ${post.status === 'done' ? 'تم الإنجاز' : 'جاري العمل'}</span>`;
+            html += `</div>`;
+            html += `</header>`;
+
+            // Main Image
+            if (post.image && !isVideo) {
+                html += `<div class="post-main-image">
+                    <img src="${post.image}" alt="${post.title || post.batch}" />
+                </div>`;
+            }
+
+            // Video
+            if (isVideo) {
+                html += `<div class="post-video">
+                    <video src="${post.image}" controls playsinline></video>
+                </div>`;
+            }
+
+            // Text / Article Body
+            if (post.text) {
+                html += `<div class="post-body">
+                    <p>${post.text}</p>
+                </div>`;
+            }
+
+            // Share bar
+            html += `<div class="post-share">
+                <span>شارك المنشور:</span>
+                <a href="https://wa.me/?text=${encodeURIComponent((post.title || post.batch) + ' - ' + window.location.href)}" target="_blank" class="share-btn whatsapp"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}" target="_blank" class="share-btn facebook"><i class="fab fa-facebook-f"></i></a>
+                <button class="share-btn copy" onclick="navigator.clipboard.writeText(window.location.href); this.innerHTML='<i class=\\'fas fa-check\\'></i>'; setTimeout(() => this.innerHTML='<i class=\\'fas fa-link\\'></i>', 2000)"><i class="fas fa-link"></i></button>
+            </div>`;
+
+            postContent.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
